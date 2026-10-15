@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<!--
+  PaperSim rendering tests. Serve the PaperSim folder over HTTP and open this page:
+      cd PaperSim && python3 -m http.server 8765
+      open http://127.0.0.1:8765/tests/render-tests.html
+  It loads the real app (../index.html) in an iframe and checks its functions:
+  equations (KaTeX + mhchem), tables, images, sanitising, backwards compatibility
+  with existing papers, zip loading and the print view.
+  NOTE: it uses the app's own storage, so it resets the paper loaded in this browser.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PaperSim rendering tests</title>
+<style>
+  body { font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 24px; color: #1a1d23; background: #fff; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  #summary { font-size: 16px; font-weight: 700; margin: 10px 0 16px; }
+  .pass { color: #1d7348; } .fail { color: #b42318; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border-bottom: 1px solid #e1e4ea; padding: 4px 8px; text-align: left; vertical-align: top; }
+  td.detail { color: #5b6372; font-family: ui-monospace, Menlo, monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+  iframe { width: 1280px; height: 900px; border: 1px solid #ccc; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>PaperSim rendering tests</h1>
+<div id="summary">Running…</div>
+<table><thead><tr><th>#</th><th>Result</th><th>Test</th><th>Detail</th></tr></thead><tbody id="rows"></tbody></table>
+<iframe id="app" src="../index.html" title="PaperSim under test"></iframe>
+
+<script>
+const results = [];
+window.__results = results;
+const rows = document.getElementById('rows');
+
+function record(name, ok, detail = '') {
+  results.push({ name, ok, detail: String(detail) });
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${results.length}</td><td class="${ok ? 'pass' : 'fail'}">${ok ? 'PASS' : 'FAIL'}</td><td></td><td class="detail"></td>`;
+  tr.children[2].textContent = name;
+  tr.children[3].textContent = ok ? '' : String(detail).slice(0, 600);
+  rows.appendChild(tr);
+}
+async function test(name, fn) {
+  try { const r = await fn(); record(name, r !== false, r === false ? 'assertion returned false' : ''); }
+  catch (e) { record(name, false, e.stack || e.message || e); }
+}
+function assert(cond, msg) { if (!cond) throw new Error(msg); }
+const count = (html, re) => (html.match(re) || []).length;
+const fetchJson = async p => (await fetch(p)).json();
+
+const frame = document.getElementById('app');
+frame.addEventListener('load', async () => {
+  const w = frame.contentWindow;
+  // wait for the app to finish init (it renders the cover page)
+  for (let i = 0; i < 100 && !w.document.querySelector('.cover, .exam'); i++) await new Promise(r => setTimeout(r, 100));
+  const E = s => w.eval(s);                       // reach top-level consts such as renderInline / assets
+  const R = t => w.renderRich(t);
+  const ok = html => count(html, /class="katex"/g) > 0 && !html.includes('math-err');
+
+  /* ---------------- libraries ---------------- */
+  await test('libraries loaded (KaTeX, mhchem, marked, DOMPurify, JSZip)', () =>
+    !!(w.katex && w.marked && w.DOMPurify && w.JSZip && w.richReady()));
+
+  /* ---------------- chemistry ---------------- */
+  await test('mhchem: balanced equation $\\ce{2H2 + O2 -> 2H2O}$', () => {
+    const h = R('$\\ce{2H2 + O2 -> 2H2O}$');
+    assert(ok(h), h.slice(0, 300));
+    assert(h.includes('<msub>') || h.includes('vlist'), 'subscripts missing');
+  });
+  await test('mhchem: ion with charge $\\ce{Fe^{3+}}$ and $\\ce{SO4^{2-}}$', () => ok(R('$\\ce{Fe^{3+}}$ and $\\ce{SO4^{2-}}$')));
+  await test('mhchem: equilibrium arrow and state symbols', () => {
+    const h = R('$\\ce{CH3COOH(aq) <=> CH3COO-(aq) + H+(aq)}$');
+    assert(ok(h), h.slice(0, 300));
+    assert(/⇌|harpoon|\\rightleftharpoons|x21CC|x21CB/.test(h) || h.includes('mover') || h.includes('arrow'), 'no equilibrium arrow found');
+  });
+  await test('mhchem: ionic precipitation equation', () => ok(R('$\\ce{Fe^{3+}(aq) + 3OH^-(aq) -> Fe(OH)3(s)}$')));
+  await test('chemistry written the old way ($\\mathrm{...}$, \\rightarrow) still renders', () =>
+    ok(R('$\\mathrm{2NaHCO_3(s) \\rightarrow Na_2CO_3(s) + H_2O(g) + CO_2(g)}$')));
+
+  /* ---------------- physics / maths ---------------- */
+  await test('fractions, roots, Greek letters, vectors, units, exponents', () => {
+    const h = R('$v = \\sqrt{2gh}$, $\\frac{1}{2}mv^2$, $\\lambda = \\frac{h}{p}$, $\\vec{F} = m\\vec{a}$, $9.81\\ \\text{m s}^{-2}$, $\\Omega$, $\\varepsilon$, $1.5 \\times 10^{-6}$');
+    assert(count(h, /class="katex"/g) === 8, `expected 8 equations, got ${count(h, /class="katex"/g)}`);
+    assert(!h.includes('math-err'), 'error found');
+  });
+  await test('display maths $$...$$ renders as a block', () => {
+    const h = R('Before\n\n$$\\frac{a}{b}$$\n\nAfter');
+    assert(h.includes('math-block') && h.includes('katex-display'), h);
+  });
+  await test('legacy \\( \\) and \\[ \\] delimiters still work', () => {
+    const h = R('\\(a = \\frac{\\Delta v}{t}\\) and \\[s = ut + \\tfrac{1}{2}at^2\\]');
+    assert(count(h, /class="katex"/g) === 2 && h.includes('katex-display'), h.slice(0, 300));
+  });
+  await test('degree sign and unicode inside maths do not break ($150\\cos 30°$)', () => ok(R('$150\\cos 30° = 130$ N')));
+
+  /* ---------------- invalid LaTeX ---------------- */
+  await test('invalid LaTeX shows raw text with an error highlight (no crash)', () => {
+    const h = R('Good $x^2$ and bad $\\badcommand{x}$ and $$\\frac{1$$');
+    assert(count(h, /class="math-err"/g) === 2, h);
+    assert(h.includes('\\badcommand{x}'), 'raw text not shown');
+    assert(count(h, /class="katex"/g) === 1, 'the valid equation should still render');
+  });
+  await test('mathErrors() reports bad LaTeX for load-time warnings', () => {
+    const e = w.mathErrors('ok $x$ bad $\\ce{H2O$ and $\\frac{1}{$');
+    assert(e.length >= 1, JSON.stringify(e));
+  });
+  await test('single-backslash LaTeX in JSON (\\frac, \\times, \\beta, \\rightarrow) is repaired with a warning', () => {
+    // what JSON.parse produces from "$\frac{1}{2} \times \beta \rightarrow x$" written with ONE backslash
+    const raw = JSON.parse('{"questions":[{"text":"$\\frac{1}{2} \\times \\beta \\rightarrow x$\\nnext line","marks":1,"markScheme":"$\\nu = 2$"}]}');
+    const p = w.normalisePaper(raw);
+    assert(p.questions[0].text === '$\\frac{1}{2} \\times \\beta \\rightarrow x$\nnext line', JSON.stringify(p.questions[0].text));
+    assert(p.warnings.some(x => /Repaired 4 LaTeX/.test(x)), JSON.stringify(p.warnings));
+    assert(p.warnings.some(x => /line break where a LaTeX command/.test(x)), JSON.stringify(p.warnings));
+    const ok = w.normalisePaper({ questions: [{ text: 'Line one\nLine two\twith tab', marks: 1 }] });
+    assert(!ok.warnings.length && ok.questions[0].text === 'Line one\nLine two\twith tab', JSON.stringify(ok));
+  });
+
+  /* ---------------- dollars that are money, not maths ---------------- */
+  await test('US$ prices are NOT treated as maths (I&S paper)', () => {
+    const h = R('Military: US$997 billion spending, more than the others combined (US$631 billion); GDP US$29.2 trillion.');
+    assert(!h.includes('katex') && !h.includes('math-err'), h);
+    assert(h.includes('US$997') && h.includes('US$631'), h);
+  });
+  await test('escaped \\$ shows a literal dollar next to maths', () => {
+    const h = R('It costs \\$5 and $x = 2$.');
+    assert(h.includes('$5') && count(h, /class="katex"/g) === 1, h);
+  });
+
+  /* ---------------- tables ---------------- */
+  await test('GFM table: header row, exam-table class, maths inside cells', () => {
+    const h = R('| Time / s | Volume / cm$^3$ |\n|---|---|\n| 30 | $\\ce{CO2}$ 24 |');
+    assert(h.includes('class="exam-table"') && h.includes('<th>') && count(h, /<td/g) === 2, h);
+    assert(count(h, /class="katex"/g) === 2, 'maths in header/cells not rendered');
+  });
+  await test('pipe inside maths does not split a table cell ($|x|$)', () => {
+    const h = R('| a | b |\n|---|---|\n| $|x|$ | 2 |');
+    assert(count(h, /<td/g) === 2, h);
+  });
+  await test('old-style table without |---| row (I&S paper) becomes a table', async () => {
+    const p = await fetchJson('fixtures/individuals-and-societies-superpowers-peace-conflict-paper.json');
+    const h = R(p.questions[0].context);
+    assert(h.includes('exam-table'), h.slice(0, 400));
+    assert(count(h, /<th[ >]/g) === 6, `expected 6 header cells, got ${count(h, /<th[ >]/g)}`);
+    assert(!h.includes('katex'), 'US$ in the table must not become maths');
+  });
+  await test('structured "table" field renders with caption and maths', () => {
+    const t = w.normTables({ caption: 'Table 1: $\\ce{CO2}$', headers: ['t / s', 'V / cm$^{3}$'], rows: [['0', '0'], [30, 24]] }, 'Q', [])[0];
+    const h = w.tableToHtml(t);
+    assert(h.includes('<caption>') && h.includes('exam-table') && count(h, /<tr>/g) === 3, h);
+    assert(count(h, /class="katex"/g) === 2, 'maths in caption/header missing');
+  });
+  await test('structured table: ragged rows are padded and warned about', () => {
+    const warn = [];
+    const t = w.normTables({ headers: ['a', 'b', 'c'], rows: [['1'], ['1', '2', '3']] }, 'Question 9', warn)[0];
+    assert(t.rows[0].length === 3 && warn.length === 1, JSON.stringify({ t, warn }));
+  });
+  await test('structured table: bad shape gives a clear error', () => {
+    try { w.normTables({ rows: 'nope' }, 'Question 9', []); return false; }
+    catch (e) { assert(/rows/.test(e.message), e.message); }
+  });
+
+  /* ---------------- Markdown basics / old formatter compatibility ---------------- */
+  await test('bold, italic, bullets after a line (old mark scheme style)', () => {
+    const h = R('Level descriptors:\n- **0**: does not reach a standard.\n- **1–2**: states *one* factor.');
+    assert(count(h, /<li>/g) === 2 && h.includes('<strong>0</strong>') && h.includes('<em>one</em>'), h);
+  });
+  await test('"•" bullets from old papers still become a list', () => count(R('• one\n• two'), /<li>/g) === 2);
+  await test('single line breaks are kept (as before)', () => R('line one\nline two').includes('<br>'));
+
+  /* ---------------- sanitising ---------------- */
+  await test('sanitiser removes scripts, event handlers and javascript: links', () => {
+    const h = R('<img src=x onerror="alert(1)"> <script>alert(2)<\/script> [x](javascript:alert(3)) <a href="javascript:alert(4)">y</a> <iframe src="https://evil"></iframe>');
+    assert(!/onerror|<script|javascript:|<iframe/i.test(h), h);
+  });
+  await test('maths cannot smuggle HTML (\\href / trust disabled)', () => {
+    const h = R('$\\href{javascript:alert(1)}{x}$ $\\htmlId{a}{b}$');
+    // KaTeX (trust: false) prints the command as red text: no link and no id attribute is created
+    assert(!/<a[\s>]|href=|id="a"/i.test(h), h);
+  });
+
+  /* ---------------- images ---------------- */
+  await test('image sources: data URI, URL, relative path are allowed; javascript: is blocked', () => {
+    assert(w.safeImageSrc('data:image/png;base64,AAAA'), 'data');
+    assert(w.safeImageSrc('https://example.com/a.png'), 'url');
+    assert(w.safeImageSrc('images/a.png') && w.safeImageSrc('./a.png'), 'relative');
+    assert(!w.safeImageSrc('javascript:alert(1)') && !w.safeImageSrc('file:///etc/passwd'), 'blocked schemes');
+  });
+  await test('normImages: string, object, array, imageAlt/imageCaption, width', () => {
+    const warn = [];
+    const a = w.normImages('images/a.png', 'Alt A', 'Cap A', 'Q', warn);
+    const b = w.normImages([{ src: 'b.png', alt: 'B', caption: 'Fig B', width: 300 }, 'c.png', { alt: 'no src' }], '', '', 'Q', warn);
+    assert(a[0].alt === 'Alt A' && a[0].caption === 'Cap A', JSON.stringify(a));
+    assert(b.length === 2 && b[0].width === '300px' && warn.length === 1, JSON.stringify({ b, warn }));
+  });
+  await test('attached files: exact path and file-name-only matches resolve to blob URLs', () => {
+    w.setAssets([{ path: 'images/circuit.png', file: new File(['x'], 'circuit.png', { type: 'image/png' }) }]);
+    const exact = w.resolveImageSrc('images/circuit.png');
+    const base = w.resolveImageSrc('./diagrams/CIRCUIT.png');
+    const missing = w.resolveImageSrc('images/other.png');
+    w.setAssets([]);
+    assert(exact.startsWith('blob:') && base.startsWith('blob:'), `${exact} / ${base}`);
+    assert(missing === 'images/other.png', missing);
+  });
+  await test('folder paths are made relative to the JSON file (relativeTo)', () =>
+    w.relativeTo('rich/paper.json', 'rich/images/a.png') === 'images/a.png' && w.relativeTo('paper.json', 'images/a.png') === 'images/a.png');
+  await test('Markdown image ![alt](path) is deferred to hydrateRich (data-src)', () => {
+    const h = R('Graph: ![A graph](images/co2-volume-graph.svg)');
+    assert(h.includes('data-src="images/co2-volume-graph.svg"') && !/\ssrc=/.test(h), h);
+  });
+  await test('a broken image becomes a readable message, not a broken icon', async () => {
+    const div = w.document.createElement('div');
+    div.innerHTML = R('![Missing diagram](images/does-not-exist.png)');
+    w.document.body.appendChild(div);
+    w.hydrateRich(div);
+    for (let i = 0; i < 30 && !div.querySelector('.img-error'); i++) await new Promise(r => setTimeout(r, 100));
+    const box = div.querySelector('.img-error');
+    div.remove();
+    assert(box && /not found/.test(box.textContent), box ? box.textContent : 'no error box');
+  });
+
+  /* ---------------- backwards compatibility: existing papers ---------------- */
+  for (const f of ['original-sample-paper.json', 'chemistry-matter-and-its-purity-paper.json',
+                   'physics-energy-electricity-electromagnetism-paper.json', 'individuals-and-societies-superpowers-peace-conflict-paper.json']) {
+    await test(`existing paper loads unchanged and renders: ${f}`, async () => {
+      const raw = await fetchJson(`fixtures/${f}`);
+      const p = w.normalisePaper(raw);
+      assert(p.questions.length === raw.questions.length, 'question count changed');
+      let eq = 0, errs = 0;
+      p.questions.forEach(q => [q.text, q.context, q.markScheme].forEach(t => {
+        const h = R(t); eq += count(h, /class="katex"/g); errs += count(h, /math-err/g);
+      }));
+      assert(errs === 0, `${errs} maths errors; warnings: ${p.warnings.join(' | ')}`);
+      return `${eq} equations rendered`;
+    });
+  }
+  await test('existing chemistry paper: all 27 inline equations render', async () => {
+    const p = w.normalisePaper(await fetchJson('fixtures/chemistry-matter-and-its-purity-paper.json'));
+    const n = p.questions.reduce((s, q) => s + [q.text, q.context, q.markScheme].reduce((a, t) => a + count(R(t), /class="katex"/g), 0), 0);
+    assert(n === 27, `rendered ${n}`);
+  });
+
+  /* ---------------- the sample rich paper, end to end ---------------- */
+  await test('sample-rich-paper.json validates with no warnings', async () => {
+    const p = w.normalisePaper(await fetchJson('../sample-rich-paper.json'));
+    assert(p.warnings.length === 0, p.warnings.join(' | '));
+    assert(p.questions.find(q => q.id === '2a').images[0].caption === 'Figure 2: a series circuit', 'caption');
+    assert(p.questions.find(q => q.id === '3a').tables[0].rows.length === 8, 'table rows');
+    assert(p.questions.find(q => q.id === '3b').markSchemeImages.length === 1, 'mark scheme image');
+  });
+  await test('zip upload: paper + images in a subfolder load and images resolve', async () => {
+    const blob = await (await fetch('fixtures/sample-rich-paper.zip')).blob();
+    const entries = await w.unzip(new File([blob], 'sample-rich-paper.zip'));
+    const json = entries.find(e => e.path.endsWith('.json'));
+    const imgs = entries.filter(e => /\.svg$/.test(e.path)).map(e => ({ ...e, path: w.relativeTo(json.path, e.path) }));
+    assert(json && imgs.length === 2, JSON.stringify(entries.map(e => e.path)));
+    w.tryLoadPaper(await json.file.text(), imgs);
+    w.closeModal();
+    assert(E('assets.size') === 2, 'assets not attached');
+    assert(w.resolveImageSrc('images/series-circuit.svg').startsWith('blob:'), 'circuit not resolved to the attached file');
+  });
+  await test('exam view renders questions with KaTeX, figure + caption and a table', async () => {
+    E("session.status = 'running'; session.startedAt = Date.now(); session.view = 'all'; renderAll();");
+    await new Promise(r => setTimeout(r, 600));
+    const d = w.document;
+    assert(d.querySelectorAll('.q').length === 9, 'question cards');
+    assert(d.querySelectorAll('.q .katex').length >= 25, `katex count ${d.querySelectorAll('.q .katex').length}`);
+    assert(!d.querySelector('.q .math-err'), 'maths error in sample');
+    const fig = d.querySelector('#q-4 .q-fig');
+    assert(fig && fig.querySelector('figcaption').textContent.includes('Figure 2'), 'figure/caption for 2a');
+    const img = fig.querySelector('img');
+    for (let i = 0; i < 30 && !(img.complete && img.naturalWidth); i++) await new Promise(r => setTimeout(r, 100));
+    assert(img.naturalWidth > 0, 'circuit image did not load');
+    assert(d.querySelector('#q-6 .exam-table caption'), 'structured table in 3a');
+    assert(d.querySelectorAll('#q-3 .opt .katex').length === 4, 'MCQ options with \\ce');
+    const dataUri = d.querySelector('#q-1 .q-fig img');
+    for (let i = 0; i < 30 && !(dataUri.complete && dataUri.naturalWidth); i++) await new Promise(r => setTimeout(r, 100));
+    assert(dataUri.naturalWidth > 0, 'data URI image did not load');
+  });
+  await test('images never overflow their column (max-width 100%)', () => {
+    const img = w.document.querySelector('#q-4 .q-fig img');
+    return w.getComputedStyle(img).maxWidth === '100%';
+  });
+  await test('mark scheme (after submit) renders maths, a Markdown table and an image', async () => {
+    E("submitPaper(); closeModal();");
+    await new Promise(r => setTimeout(r, 500));
+    const ms = w.document.querySelector('#q-7 .ms-box');
+    assert(ms.querySelector('.exam-table') && ms.querySelectorAll('.katex').length >= 2, 'table/maths in 3b mark scheme');
+    const img = ms.querySelector('.q-fig img');
+    for (let i = 0; i < 30 && !(img.complete && img.naturalWidth); i++) await new Promise(r => setTimeout(r, 100));
+    assert(img.naturalWidth > 0, 'mark scheme image did not load');
+  });
+  await test('print / export view contains maths, tables, images and the mark scheme', () => {
+    E('session.includeMarkScheme = true; buildPrintView();');
+    const pv = w.document.getElementById('print-view');
+    assert(pv.querySelectorAll('.katex').length > 40, `katex ${pv.querySelectorAll('.katex').length}`);
+    assert(pv.querySelectorAll('.exam-table').length >= 3, `tables ${pv.querySelectorAll('.exam-table').length}`);
+    assert(pv.querySelectorAll('img').length >= 3, `images ${pv.querySelectorAll('img').length}`);
+    assert(pv.querySelectorAll('.pv-ms').length === 9, 'mark schemes');
+    assert(!pv.querySelector('.math-err'), 'maths error in print view');
+  });
+  await test('attached images survive a reload (IndexedDB)', async () => {
+    await w.persistAssets();
+    E('assets.clear()');
+    await w.restoreAssets();
+    return E('assets.size') >= 2;
+  });
+
+  /* ---------------- resources: periodic table, formula sheets, PDFs ---------------- */
+  await test('resources: all the ways of writing them are read; bad ones are skipped with a warning', () => {
+    const warn = [];
+    const r = w.normResources(['periodic-table', 'resources/Data_booklet.pdf',
+      { title: 'Formula sheet', content: '$v = \\frac{d}{t}$', table: { headers: ['a'], rows: [['1']] } },
+      { title: 'Formula sheet', content: 'duplicate title' },
+      { builtin: 'formula-sheet' }, { src: 'javascript:alert(1)' }, { title: 'empty' }], warn);
+    assert(r.map(x => x.kind).join() === 'builtin,file,content,content', JSON.stringify(r));
+    assert(r[0].title === 'Periodic table' && r[1].fileType === 'pdf' && r[1].title === 'Data booklet', JSON.stringify(r.slice(0, 2)));
+    assert(new Set(r.map(x => x.id)).size === 4, 'ids must be unique');
+    assert(r[2].tables.length === 1, 'resource table');
+    assert(warn.length === 3, JSON.stringify(warn));
+  });
+  await test('resources survive save + reload (normalised paper normalises to itself)', () => {
+    const p = w.normalisePaper(JSON.stringify(E('paper')));
+    return JSON.stringify(p.resources) === JSON.stringify(E('paper.resources')) && p.resources.length === 3;
+  });
+  await test('old papers: no resources, nothing breaks; the side tab is hidden on the cover page', async () => {
+    const raw = await (await fetch('fixtures/chemistry-matter-and-its-purity-paper.json')).text();
+    const p = w.normalisePaper(raw);
+    assert(Array.isArray(p.resources) && p.resources.length === 0 && !p.warnings.length, JSON.stringify(p.warnings));
+    E('tryLoadPaper(' + JSON.stringify(raw) + ')');
+    await new Promise(r => setTimeout(r, 300));
+    assert(w.document.getElementById('res-tab').hidden, 'tab should be hidden before the exam starts');
+    E("session.status = 'running'; session.startedAt = Date.now(); renderAll();");
+    assert(!w.document.getElementById('res-tab').hidden, 'tab should show during the exam');
+    w.document.getElementById('res-tab').click();
+    assert(w.document.querySelector('.res-empty'), 'empty state with add buttons');
+    E('toggleResources(false)');
+  });
+  await test('side tab opens the drawer: built-in periodic table with 118 elements', async () => {
+    const raw = await (await fetch('../sample-rich-paper.json')).text();
+    E('tryLoadPaper(' + JSON.stringify(raw) + ', [])');
+    E("closeModal(); session.status = 'running'; session.startedAt = Date.now(); renderAll();");
+    const d = w.document;
+    assert(d.querySelector('#res-tab .res-count').textContent === '3', 'count badge');
+    d.getElementById('res-tab').click();
+    assert(!d.getElementById('res-drawer').hidden, 'drawer open');
+    assert(d.querySelectorAll('.res-tabs [role=tab]').length === 3, 'three tabs');
+    assert(d.querySelectorAll('.pt-el[data-z]').length === 118, `elements ${d.querySelectorAll('.pt-el[data-z]').length}`);
+    const fe = d.querySelector('.pt-el[data-z="26"]');
+    assert([...fe.children].map(c => c.textContent).join(' ') === '26 Fe 55.85', fe.textContent);
+    assert(fe.getAttribute('aria-label').startsWith('Iron (Fe), atomic number 26'), 'accessible name');
+    fe.click();
+    assert(d.querySelector('.pt-info').textContent.includes('Iron'), 'element info');
+    const pos = z => { const s = d.querySelector(`.pt-el[data-z="${z}"]`).style; return s.gridRow + '/' + s.gridColumn; };
+    // H period 1 group 1, He group 18, Hf period 6 group 4, La f-block row, Og period 7 group 18
+    assert([pos(1), pos(2), pos(72), pos(57), pos(118)].join(' ') === '2/2 2/19 7/5 10/4 8/19', [pos(1), pos(2), pos(72), pos(57), pos(118)].join(' '));
+    const all = [...d.querySelectorAll('.pt-el[data-z]')].map(e => e.style.gridRow + '/' + e.style.gridColumn);
+    assert(new Set(all).size === 118, 'two elements share a cell');
+    assert([2, 10, 18, 36, 54, 86, 118].every(z => pos(z).endsWith('/19')), 'noble gases must all be in group 18');
+    assert([3, 11, 19, 37, 55, 87].every(z => pos(z).endsWith('/2')), 'alkali metals in group 1');
+  });
+  await test('formula sheet and data resources render maths, \\ce and tables', () => {
+    const d = w.document;
+    d.querySelectorAll('.res-tabs [role=tab]')[1].click();
+    const b = d.querySelector('.res-body');
+    assert(b.querySelectorAll('.katex').length >= 11 && b.querySelectorAll('.exam-table').length === 2, b.innerHTML.slice(0, 200));
+    d.querySelectorAll('.res-tabs [role=tab]')[2].click();
+    assert(b.querySelectorAll('.katex').length >= 10 && !b.querySelector('.math-err'), 'chemistry data');
+  });
+  await test('a [periodic table](#resource:periodic-table) link in a question opens it', () => {
+    const d = w.document;
+    E('toggleResources(false)');
+    const a = d.querySelector('#main a[href="#resource:periodic-table"]');
+    assert(a, 'link rendered in 3c');
+    a.click();
+    return !d.getElementById('res-drawer').hidden && d.querySelectorAll('.pt-el[data-z]').length === 118;
+  });
+  await test('adding your own PDF: shown in a frame, kept with the paper, removable', async () => {
+    const blob = await (await fetch('fixtures/formula-sheet.pdf')).blob();
+    w.addResourceFiles([new w.File([blob], 'formula-sheet.pdf', { type: 'application/pdf' })]);
+    const d = w.document;
+    const fr = d.querySelector('.res-pdf');
+    assert(fr && fr.src.startsWith('blob:'), 'pdf frame');
+    assert(E('paper.resources').some(r => r.userAdded && r.title === 'Formula sheet'), 'resource added + titled');
+    assert(E("assets.has('resources/formula-sheet.pdf')"), 'file kept with the attached files');
+    assert(JSON.parse(w.localStorage.getItem(E('STORE.paper'))).resources.length === 4, 'saved with the paper');
+    d.querySelector('[data-res="remove"]').click();
+    assert(E('paper.resources.length') === 3, 'removed');
+  });
+  await test('Escape closes the drawer', () => {
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape' }));
+    return w.document.getElementById('res-drawer').hidden;
+  });
+  await test('zip with a PDF resource: the PDF is attached and resolves', async () => {
+    const blob = await (await fetch('fixtures/sample-rich-paper.zip')).blob();
+    const files = await w.unzip(new w.File([blob], 'sample.zip'));
+    return files.some(f => /formula-sheet\.pdf$/.test(f.path) && f.file.type === 'application/pdf');
+  });
+
+  const passed = results.filter(r => r.ok).length;
+  const s = document.getElementById('summary');
+  s.textContent = `${passed} / ${results.length} passed`;
+  s.className = passed === results.length ? 'pass' : 'fail';
+  window.__done = true;
+});
+</script>
+</body>
+</html>

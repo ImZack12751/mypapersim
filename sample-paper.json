@@ -1,0 +1,60 @@
+{
+  "title": "MYP Sciences (Physics) Practice Paper",
+  "subject": "Sciences · Physics",
+  "durationMinutes": 120,
+  "instructions": [
+    "Answer all questions.",
+    "Write your answers in the answer boxes provided.",
+    "The number of marks for each question is shown in brackets. Use it as a guide to how much detail you need.",
+    "Read the command term in each question (identify, calculate, analyse, evaluate) carefully. It tells you what kind of answer is expected.",
+    "To write mathematics, click Insert equation (or press Ctrl+M) inside an answer box, then type LaTeX such as \\frac, \\sqrt or \\alpha.",
+    "Flag any question you want to come back to. Your work is saved automatically.",
+    "When the time runs out your answers are locked. Submit the paper to see the mark scheme and mark your own work."
+  ],
+  "gradeBoundaries": { "1": 0, "2": 10, "3": 22, "4": 35, "5": 50, "6": 64, "7": 78 },
+  "questions": [
+    {
+      "id": "1a",
+      "task": "Task 1: Motion of a cyclist",
+      "criterion": "A",
+      "marks": 1,
+      "commandTerm": "Identify",
+      "text": "Identify which **one** of the following quantities is a vector.",
+      "options": ["Speed", "Mass", "Displacement", "Kinetic energy"],
+      "correctOption": "C",
+      "markScheme": "**C**: displacement. It has both magnitude and direction. [1]"
+    },
+    {
+      "id": "1b",
+      "task": "Task 1: Motion of a cyclist",
+      "criterion": "A",
+      "marks": 3,
+      "commandTerm": "Calculate",
+      "context": "A cyclist starts from rest and accelerates uniformly along a straight, flat road. After 4.0 s the cyclist's speed is 8.0 m s⁻¹.",
+      "text": "Calculate the acceleration of the cyclist **and** the distance travelled in the first 4.0 s. Show your working.",
+      "markScheme": "- \\(a = \\frac{\\Delta v}{t} = \\frac{8.0}{4.0}\\) [1]\n- \\(a = 2.0\\ \\text{m s}^{-2}\\) [1]\n- \\(s = \\tfrac{1}{2}at^2 = \\tfrac{1}{2}(2.0)(4.0)^2 = 16\\ \\text{m}\\) [1]\nAward full marks for a correct final answer with units. Allow error carried forward from an incorrect acceleration."
+    },
+    {
+      "id": "2",
+      "task": "Task 2: Investigating a pendulum",
+      "criterion": "C",
+      "marks": 5,
+      "commandTerm": "Analyse",
+      "context": "A student investigated how the length of a pendulum, L, affects its period, T (the time for one complete swing). For each length the student timed 10 swings and divided by 10.\n\n| Length L (m) | Time for 10 swings (s) | Period T (s) |\n|---|---|---|\n| 0.20 | 9.0 | 0.90 |\n| 0.40 | 12.7 | 1.27 |\n| 0.60 | 15.5 | 1.55 |\n| 0.80 | 17.9 | 1.79 |\n| 1.00 | 20.1 | 2.01 |\n\nFor a simple pendulum, \\(T = 2\\pi\\sqrt{\\frac{L}{g}}\\).",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 210' width='260' height='210' font-family='Georgia, serif' font-size='15'><rect x='50' y='12' width='160' height='10' fill='%23555'/><line x1='130' y1='22' x2='130' y2='190' stroke='%23999' stroke-dasharray='4 4'/><line x1='130' y1='22' x2='180' y2='162' stroke='%23222' stroke-width='2'/><circle cx='180' cy='162' r='14' fill='%232a5caa'/><path d='M130 67 A45 45 0 0 0 145.1 64.4' fill='none' stroke='%23d97706' stroke-width='2'/><text x='134' y='88' fill='%23d97706'>&%23952;</text><text x='162' y='96'>L</text><text x='200' y='170'>bob</text><text x='60' y='205' font-size='12' fill='%23666'>Figure 1: a simple pendulum</text></svg>",
+      "imageAlt": "Diagram of a simple pendulum of length L released from angle theta",
+      "text": "Analyse the data to describe the relationship between L and T. Use the data and the equation in the source to estimate g, the gravitational field strength. State whether the results support the hypothesis that a longer pendulum has a longer period.",
+      "markScheme": "- Describes the trend: T increases as L increases [1]\n- Recognises the relationship is **not** directly proportional, e.g. doubling L from 0.20 m to 0.40 m does not double T [1]\n- Rearranges correctly: \\(g = \\frac{4\\pi^2 L}{T^2}\\) [1]\n- Substitutes one data pair, e.g. \\(\\frac{4\\pi^2(1.00)}{2.01^2} \\approx 9.8\\ \\text{N kg}^{-1}\\) [1]\n- Valid conclusion that the data support the hypothesis [1]"
+    },
+    {
+      "id": "3",
+      "task": "Task 3: Electric buses",
+      "criterion": "D",
+      "marks": 6,
+      "commandTerm": "Evaluate",
+      "context": "A city council proposes replacing all of its diesel buses with battery-electric buses within five years. Supporters say this will reduce the city's carbon emissions. Some residents point out that most of the electricity used to charge the buses is generated in coal-fired power stations.",
+      "text": "Evaluate the proposal to replace diesel buses with electric buses. In your answer consider environmental, economic **and** social factors, and finish with a concluding appraisal.",
+      "markScheme": "Level descriptors:\n- **0**: does not reach a standard described below.\n- **1–2**: states one or two factors with little or no explanation.\n- **3–4**: discusses advantages and disadvantages of at least two factors with some explanation.\n- **5–6**: balanced evaluation of environmental, economic and social factors, supported by scientific reasoning, with a justified conclusion.\nIndicative content: no exhaust emissions, so better air quality in the city; total CO₂ depends on how the electricity is generated (coal compared with renewables); environmental cost of battery production and disposal; high purchase cost but lower fuel and maintenance costs; quieter buses; need for charging infrastructure; jobs and retraining."
+    }
+  ]
+}

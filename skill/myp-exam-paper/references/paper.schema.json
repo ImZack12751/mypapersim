@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://papersim.local/paper.schema.json",
+  "title": "PaperSim paper",
+  "description": "A practice exam paper for PaperSim. Only questions[].text and questions[].marks are required. Text fields are Markdown with maths: $...$ inline, $$...$$ block (also \\(...\\) and \\[...\\]), chemistry with $\\ce{...}$. In JSON every backslash is written twice.",
+  "type": "object",
+  "required": [
+    "questions"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "durationMinutes": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 120
+    },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gradeBoundaries": {
+      "type": "object",
+      "description": "Minimum percentage for each grade, e.g. {\"1\": 0, \"2\": 10, ...}",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    },
+    "resources": {
+      "$ref": "#/$defs/resources"
+    }
+  },
+  "$defs": {
+    "richText": {
+      "type": "string",
+      "description": "Markdown: **bold**, *italic*, '- ' bullets, GitHub tables, ![alt](path) images. Maths $...$ / $$...$$, chemistry $\\ce{...}$."
+    },
+    "imageSrc": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A relative path (e.g. images/fig1.png, matched to files attached when loading), an http(s) URL, or a data:image/... URI.",
+      "pattern": "^(data:image/|https?://|(?![a-zA-Z][a-zA-Z0-9+.-]*:)).+"
+    },
+    "image": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/imageSrc"
+        },
+        {
+          "type": "object",
+          "required": [
+            "src"
+          ],
+          "properties": {
+            "src": {
+              "$ref": "#/$defs/imageSrc"
+            },
+            "alt": {
+              "type": "string",
+              "description": "Text description for screen readers and when the image fails to load."
+            },
+            "caption": {
+              "$ref": "#/$defs/richText"
+            },
+            "width": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "Optional display width: 300, \"300px\", \"60%\". The image never exceeds the column width."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "images": {
+      "description": "One image, a list of images, or \"\" / null for none (older papers use \"image\": \"\").",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/image"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/image"
+          }
+        },
+        {
+          "const": ""
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "table": {
+      "type": "object",
+      "required": [
+        "rows"
+      ],
+      "properties": {
+        "headers": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "number"
+            ]
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "number",
+                "null"
+              ]
+            }
+          }
+        },
+        "caption": {
+          "$ref": "#/$defs/richText"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tables": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/table"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/table"
+          }
+        }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "text",
+        "marks"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "marks": {
+          "type": "number",
+          "minimum": 0
+        },
+        "commandTerm": {
+          "type": "string"
+        },
+        "criterion": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/richText"
+        },
+        "text": {
+          "$ref": "#/$defs/richText",
+          "minLength": 1
+        },
+        "image": {
+          "$ref": "#/$defs/images"
+        },
+        "imageAlt": {
+          "type": "string"
+        },
+        "imageCaption": {
+          "$ref": "#/$defs/richText"
+        },
+        "images": {
+          "$ref": "#/$defs/images"
+        },
+        "table": {
+          "$ref": "#/$defs/tables"
+        },
+        "tables": {
+          "$ref": "#/$defs/tables"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/richText"
+          },
+          "maxItems": 10
+        },
+        "correctOption": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Ja-j]$"
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ]
+        },
+        "markScheme": {
+          "$ref": "#/$defs/richText"
+        },
+        "markSchemeImage": {
+          "$ref": "#/$defs/images"
+        },
+        "markSchemeImages": {
+          "$ref": "#/$defs/images"
+        },
+        "markSchemeImageAlt": {
+          "type": "string"
+        },
+        "markSchemeImageCaption": {
+          "$ref": "#/$defs/richText"
+        },
+        "markSchemeTable": {
+          "$ref": "#/$defs/tables"
+        },
+        "markSchemeTables": {
+          "$ref": "#/$defs/tables"
+        }
+      }
+    },
+    "resource": {
+      "description": "A sheet students can open from the Resources tab: the built-in periodic table, a sheet written in Markdown/maths, or a PDF/image file.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "\"periodic-table\", or a file path/URL to a PDF or image."
+        },
+        {
+          "type": "object",
+          "required": [
+            "builtin"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "builtin": {
+              "enum": [
+                "periodic-table"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "src"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "src": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(data:(image|application/pdf)|https?://|(?![a-zA-Z][a-zA-Z0-9+.-]*:)).+",
+              "description": "PDF or image: relative path (attach the file when loading), https URL, or data: URI."
+            },
+            "alt": {
+              "type": "string"
+            },
+            "userAdded": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "required": [
+                "content"
+              ]
+            },
+            {
+              "required": [
+                "table"
+              ]
+            },
+            {
+              "required": [
+                "tables"
+              ]
+            }
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "content": {
+              "$ref": "#/$defs/richText"
+            },
+            "table": {
+              "$ref": "#/$defs/tables"
+            },
+            "tables": {
+              "$ref": "#/$defs/tables"
+            },
+            "image": {
+              "$ref": "#/$defs/images"
+            },
+            "images": {
+              "$ref": "#/$defs/images"
+            },
+            "imageAlt": {
+              "type": "string"
+            },
+            "imageCaption": {
+              "$ref": "#/$defs/richText"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/resource"
+      },
+      "description": "Opened from the Resources tab on the right of the exam. Link from a question with [periodic table](#resource:periodic-table) or #resource:<id>."
+    }
+  }
+}

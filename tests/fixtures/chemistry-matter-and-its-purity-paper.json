@@ -1,0 +1,186 @@
+{
+  "title": "Chemistry: Matter and its Purity Practice Paper",
+  "durationMinutes": 65,
+  "questions": [
+    {
+      "id": "1a",
+      "marks": 3,
+      "commandTerm": "Explain",
+      "context": "A student melts some stearic acid and then records its temperature every 30 seconds as it cools from 90 °C to 50 °C. The temperature stays constant at 69 °C for about four minutes before it starts to fall again.",
+      "image": "",
+      "text": "Explain, using kinetic theory, why the temperature stays constant at 69 °C.",
+      "markScheme": "The liquid is freezing / changing state to a solid at 69 °C; energy is released as forces of attraction form between particles (particles fixed into a lattice); this released energy replaces the energy lost to the surroundings, so the average kinetic energy of the particles (temperature) does not change"
+    },
+    {
+      "id": "1b",
+      "marks": 3,
+      "commandTerm": "Explain",
+      "context": "",
+      "image": "",
+      "text": "Explain why sweating cools the body.",
+      "markScheme": "Sweat (water) evaporates from the skin; the particles with the highest kinetic energy escape from the surface; so the average kinetic energy (temperature) of the remaining liquid falls and energy is absorbed from the skin"
+    },
+    {
+      "id": "1c",
+      "marks": 3,
+      "commandTerm": "Predict",
+      "context": "A long glass tube is clamped horizontally. At the same moment, cotton wool soaked in concentrated ammonia solution is placed in one end and cotton wool soaked in concentrated hydrochloric acid is placed in the other end. After a few minutes a white ring of ammonium chloride forms inside the tube: $\\mathrm{NH_3(g) + HCl(g) \\rightarrow NH_4Cl(s)}$. ($M_r$: $\\mathrm{NH_3}$ = 17, $\\mathrm{HCl}$ = 36.5)",
+      "image": "",
+      "text": "Predict where the white ring forms and explain your prediction.",
+      "markScheme": "Ring forms closer to the HCl end; NH3 has a lower Mr / is lighter than HCl; so NH3 particles move / diffuse faster and travel further in the same time"
+    },
+    {
+      "id": "2a",
+      "marks": 3,
+      "commandTerm": "Calculate",
+      "context": "Use $A_r$: H = 1, C = 12, O = 16, Na = 23, Mg = 24, Cl = 35.5 for all of question 2. Sodium hydrogencarbonate decomposes on heating: $\\mathrm{2NaHCO_3(s) \\rightarrow Na_2CO_3(s) + H_2O(g) + CO_2(g)}$. A student heats 16.8 g of sodium hydrogencarbonate until it has completely decomposed.",
+      "image": "",
+      "text": "Calculate the theoretical mass of sodium carbonate formed.",
+      "markScheme": "$n(\\mathrm{NaHCO_3}) = 16.8 \\div 84 = 0.200$ mol; mole ratio 2 : 1 so $n(\\mathrm{Na_2CO_3}) = 0.100$ mol; mass $= 0.100 \\times 106 = 10.6$ g"
+    },
+    {
+      "id": "2b",
+      "marks": 2,
+      "commandTerm": "Calculate",
+      "context": "",
+      "image": "",
+      "text": "The student actually obtains 9.54 g of sodium carbonate. Calculate the percentage yield.",
+      "markScheme": "% yield $= \\frac{9.54}{10.6} \\times 100$; $= 90.0\\%$ (ECF from 3d)"
+    },
+    {
+      "id": "2c",
+      "marks": 3,
+      "commandTerm": "Determine",
+      "context": "4.80 g of magnesium is added to 150 cm³ of 2.00 mol/dm³ hydrochloric acid: $\\mathrm{Mg(s) + 2HCl(aq) \\rightarrow MgCl_2(aq) + H_2(g)}$.",
+      "image": "",
+      "text": "Determine which reactant is limiting. Show your working.",
+      "markScheme": "$n(\\mathrm{Mg}) = 4.80 \\div 24 = 0.200$ mol; $n(\\mathrm{HCl}) = 2.00 \\times 0.150 = 0.300$ mol; dividing by coefficients: Mg 0.200, HCl 0.150 (or: 0.200 mol Mg needs 0.400 mol HCl, only 0.300 available), so HCl is limiting"
+    },
+    {
+      "id": "2d",
+      "marks": 2,
+      "commandTerm": "Calculate",
+      "context": "",
+      "image": "",
+      "text": "Calculate the volume of hydrogen, in $\\mathrm{dm^3}$, produced at room temperature and pressure in 2c.",
+      "markScheme": "$n(\\mathrm{H_2}) = 0.300 \\div 2 = 0.150$ mol; $V = 0.150 \\times 24 = 3.60\\ \\mathrm{dm^3}$ (ECF from limiting reactant)"
+    },
+    {
+      "id": "2e",
+      "marks": 4,
+      "commandTerm": "Determine",
+      "context": "A hydrocarbon contains 82.8% carbon and 17.2% hydrogen by mass. Its relative molecular mass is 58.",
+      "image": "",
+      "text": "Determine the empirical formula and the molecular formula of the hydrocarbon.",
+      "markScheme": "Moles: C $= 82.8 \\div 12 = 6.90$, H $= 17.2 \\div 1 = 17.2$; ratio C : H $= 1 : 2.49$, multiplied by 2 gives 2 : 5 so empirical formula $\\mathrm{C_2H_5}$; empirical $M_r = 29$ so $n = 58 \\div 29 = 2$; molecular formula $\\mathrm{C_4H_{10}}$"
+    },
+    {
+      "id": "3a",
+      "marks": 2,
+      "commandTerm": "Outline",
+      "context": "",
+      "image": "",
+      "text": "Outline why the definition of the kilogram was changed in 2019.",
+      "markScheme": "It was previously defined by a physical object (platinum-iridium cylinder) whose mass could change / drift (contamination, wear) relative to its copies; it is now defined using a fixed constant of nature (Planck's constant), which never changes and can be reproduced in any suitably equipped laboratory"
+    },
+    {
+      "id": "3b",
+      "marks": 2,
+      "commandTerm": "Identify",
+      "context": "The data-book melting point of pure aspirin is 136 °C. A student tests two samples. Sample P melts at 136 °C. Sample Q melts gradually between 128 °C and 133 °C.",
+      "image": "",
+      "text": "Identify which sample is impure and justify your answer.",
+      "markScheme": "Sample Q is impure; it melts below the data-book value and over a range of temperatures (both features needed for the mark)"
+    },
+    {
+      "id": "3c",
+      "marks": 3,
+      "commandTerm": "Explain",
+      "context": "",
+      "image": "",
+      "text": "Explain, using ideas about particles, why the impure sample melts at a lower temperature and over a range.",
+      "markScheme": "Impurity particles are a different size / shape and disrupt the regular lattice; forces of attraction are weakened in places so less energy is needed to break the structure (lower melting point); different regions are disrupted by different amounts so they melt at different temperatures (range)"
+    },
+    {
+      "id": "3d",
+      "marks": 6,
+      "commandTerm": "Discuss",
+      "context": "In India, the FSSAI (Food Safety and Standards Authority of India) sets legal limits on substances in food, and BIS hallmarking certifies the purity of gold jewellery.",
+      "image": "",
+      "text": "Discuss the statement 'all impurities in substances are harmful'. In your answer, refer to harmful and useful impurities and to the role of standards bodies, and reach a conclusion.",
+      "markScheme": "Harmful example 1 with effect (e.g. metanil yellow in turmeric / urea or detergent in milk - poisoning, organ damage); Harmful example 2 with effect (e.g. arsenic or fluoride in groundwater - arsenicosis / fluorosis; diethylene glycol in medicines - deaths; sulfur in fuel - acid rain); Useful example 1 with reason (e.g. alloys such as steel / 22-carat gold - harder; salt on roads - lowers freezing point); Useful example 2 with reason (e.g. iodised salt prevents goitre; fluoride strengthens enamel; doping silicon makes semiconductors; chlorine kills microbes); Role of standards: bodies such as FSSAI / BIS / pharmacopoeias set limits on specific impurities for specific uses and certify purity, protecting health and ensuring fair trade; Justified conclusion: statement is false / too absolute - whether an impurity is harmful depends on what it is, how much is present and what the substance is used for"
+    },
+    {
+      "id": "4a",
+      "marks": 3,
+      "commandTerm": "Compare",
+      "context": "A student mixes iron filings with powdered sulfur. Half of the mixture is then heated strongly; it glows and forms a black solid, iron(II) sulfide, FeS.",
+      "image": "",
+      "text": "Compare the unheated mixture with the iron(II) sulfide, referring to the effect of a magnet and the effect of adding dilute hydrochloric acid.",
+      "markScheme": "Magnet: attracts iron out of the mixture but does not attract FeS; Dilute HCl: mixture gives hydrogen (odourless gas, squeaky pop) while FeS gives hydrogen sulfide (rotten-egg smell); Conclusion: in the mixture each substance keeps its own properties / can be separated physically, while FeS is a compound with new properties / elements chemically bonded (accept fixed composition)"
+    },
+    {
+      "id": "4b",
+      "marks": 5,
+      "commandTerm": "Describe",
+      "context": "Rock salt is a mixture of sodium chloride and sand.",
+      "image": "",
+      "text": "Describe how you would obtain pure, dry sodium chloride and pure, dry sand from a sample of rock salt.",
+      "markScheme": "Add water and stir (warm) so that the salt dissolves while sand does not; filter the mixture; sand is collected as the residue - wash with distilled water and dry it (in a warm oven / between filter papers); salt solution is the filtrate; evaporate or crystallise the filtrate (heat to crystallisation point, cool, filter, dry) to obtain the salt"
+    },
+    {
+      "id": "4c",
+      "marks": 4,
+      "commandTerm": "Identify",
+      "context": "A student sets up simple distillation apparatus to obtain pure water from seawater. The thermometer bulb is placed in the seawater inside the flask. Cooling water enters the Liebig condenser at the top and leaves at the bottom.",
+      "image": "",
+      "text": "Identify the two errors in the set-up and explain how each should be corrected.",
+      "markScheme": "Error 1: thermometer bulb in the liquid; should be level with the side arm (opening to the condenser); so that it measures the temperature of the vapour being collected; Error 2: water enters at the top; should enter at the bottom and leave at the top, so the condenser jacket stays full of water / cooling is most efficient (counter-current)"
+    },
+    {
+      "id": "4d",
+      "marks": 5,
+      "commandTerm": "Explain",
+      "context": "Ethanol (boiling point 78 °C) and water (boiling point 100 °C) are miscible.",
+      "image": "",
+      "text": "Explain how fractional distillation separates a mixture of ethanol and water.",
+      "markScheme": "The mixture is heated and vapour rises into a fractionating column packed with glass beads; the column has a temperature gradient - hottest at the bottom, coolest at the top; vapour repeatedly condenses and re-evaporates on the beads, becoming richer in the more volatile / lower boiling ethanol each time; water (higher bp) condenses and runs back into the flask; ethanol vapour reaches the top at 78 °C, is condensed in the condenser and collected (change receiver when thermometer rises above 78 °C)"
+    },
+    {
+      "id": "4e",
+      "marks": 3,
+      "commandTerm": "Explain",
+      "context": "",
+      "image": "",
+      "text": "Explain why crystallisation produces a purer product than evaporating a solution to dryness.",
+      "markScheme": "Soluble impurities are present in small amounts so they do not reach saturation and remain dissolved in the mother liquor; only particles that fit the regular crystal lattice are built into the crystals; the crystals are filtered off from the mother liquor (and washed), whereas evaporation to dryness deposits the impurities with the product"
+    },
+    {
+      "id": "5a",
+      "marks": 2,
+      "commandTerm": "Calculate",
+      "context": "A food colouring X and three permitted dyes A, B and C are spotted on the same baseline of chromatography paper and run with water as the solvent. The solvent front moves 9.6 cm from the baseline. Distances moved from the baseline (to spot centre): Dye A - one spot at 2.4 cm; Dye B - one spot at 4.8 cm; Dye C - one spot at 6.0 cm; Food colouring X - three spots at 2.4 cm, 6.0 cm and 8.2 cm.",
+      "image": "",
+      "text": "Calculate the $R_f$ value of dye C.",
+      "markScheme": "$R_f = \\frac{6.0}{9.6}$; $= 0.63$ (accept 0.625; no units)"
+    },
+    {
+      "id": "5b",
+      "marks": 3,
+      "commandTerm": "Deduce",
+      "context": "",
+      "image": "",
+      "text": "Using the data in 5a, deduce what food colouring X contains.",
+      "markScheme": "X is a mixture of at least three substances (three spots); X contains dyes A and C (spots at the same distances / same Rf) and does not contain B; the spot at 8.2 cm (Rf 0.85) is a substance not among A, B or C"
+    },
+    {
+      "id": "5c",
+      "marks": 3,
+      "commandTerm": "Explain",
+      "context": "",
+      "image": "",
+      "text": "Explain how paper chromatography separates the components of a mixture.",
+      "markScheme": "The solvent (mobile phase) moves up the paper (stationary phase) by capillary action; each component has a different solubility in the solvent and a different attraction to the paper; more soluble / less attracted components travel further in the same time, so components separate into different spots"
+    }
+  ]
+}
